@@ -1,0 +1,133 @@
+interface IBaseNumber {
+    val value: Int
+    fun printValue()
+}
+
+class PrimeNumber(override val value: Int) : IBaseNumber {
+
+    init {
+        require(isPrime(value)) { "El valor debe ser un número primo." }
+    }
+
+    private fun isPrime(number: Int): Boolean {
+        if (number <= 1) return false
+        if (number == 2) return true
+        if (number % 2 == 0) return false
+
+        for (i in 3..Math.sqrt(number.toDouble()).toInt() step 2) {
+            if (number % i == 0) return false
+        }
+        return true
+    }
+
+    override fun printValue() {
+        println("Número primo: $value")
+    }
+}
+
+class OddNumber(override val value: Int) : IBaseNumber {
+
+    val divisors: List<Int> = getDivisors(value)
+
+    init {
+        require(value % 2 != 0) { "El valor debe ser un número impar." }
+    }
+
+    private fun getDivisors(number: Int): List<Int> {
+        return (1..number / 2).filter { number % it == 0 }
+    }
+
+    override fun printValue() {
+        println("Número impar: $value")
+    }
+
+    fun printDivisors() {
+        println("Divisores de $value: ${divisors.joinToString(", ")}")
+    }
+}
+
+class EvenNumber(override val value: Int) : IBaseNumber {
+
+    val divisors: List<Int> = getDivisors(value)
+
+    init {
+        require(value % 2 == 0) { "El valor debe ser un número par." }
+    }
+
+    private fun getDivisors(number: Int): List<Int> {
+        return (1..number / 2).filter { number % it == 0 }
+    }
+
+    override fun printValue() {
+        println("Número par: $value")
+    }
+
+    fun printDivisors() {
+        println("Divisores de $value: ${divisors.joinToString(", ")}")
+    }
+}
+
+class PrimeNumberProcessor {
+
+    fun evaluateNumbers(start: Int, end: Int): EvaluationResult {
+        val primes = mutableListOf<PrimeNumber>()
+        val evens = mutableListOf<EvenNumber>()
+        val odds = mutableListOf<OddNumber>()
+
+        for (i in start..end) {
+            val number = validateNumber(i)
+            when (number) {
+                is PrimeNumber -> primes.add(number)
+                is EvenNumber -> evens.add(number)
+                is OddNumber -> odds.add(number)
+            }
+        }
+
+        return EvaluationResult(primes, evens, odds)
+    }
+
+    private fun validateNumber(number: Int): IBaseNumber? {
+        return when {
+            isPrime(number) -> PrimeNumber(number)
+            number % 2 == 0 -> EvenNumber(number)
+            else -> OddNumber(number)
+        }
+    }
+
+    private fun isPrime(number: Int): Boolean {
+        if (number <= 1) return false
+        if (number == 2) return true
+        if (number % 2 == 0) return false
+
+        for (i in 3..Math.sqrt(number.toDouble()).toInt() step 2) {
+            if (number % i == 0) return false
+        }
+        return true
+    }
+}
+
+data class EvaluationResult(
+    val primes: List<PrimeNumber>,
+    val evens: List<EvenNumber>,
+    val odds: List<OddNumber>
+)
+
+fun main() {
+    val processor = PrimeNumberProcessor()
+    val result = processor.evaluateNumbers(1, 100)
+
+    println("Números primos:")
+    result.primes.forEach { it.printValue() }
+
+    println("\nNúmeros pares:")
+    result.evens.forEach {
+        it.printValue()
+        it.printDivisors()
+    }
+
+    println("\nNúmeros impares:")
+    result.odds.forEach {
+        it.printValue()
+        it.printDivisors()
+    }
+}
